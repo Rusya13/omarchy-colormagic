@@ -24,6 +24,7 @@ Panel {
   property var models: []
   property string modelsError: ""
   property bool modelsLoading: false
+  property string loginError: ""
 
   // --- Generate tab state ---
   property string genPrompt: ""
@@ -351,20 +352,21 @@ Panel {
       var parsed = parseLogin(root.loginRaw)
       if (parsed.parseError) {
         var raw = root.loginRaw.trim() || root.modelsError
-        root.modelsError = "Sign-in gave an unreadable answer" + (code !== 0 ? " (exit " + code + ")" : "") + (raw !== "" ? ": " + raw.slice(-300) : ".")
+        root.loginError = "Sign-in gave an unreadable answer" + (code !== 0 ? " (exit " + code + ")" : "") + (raw !== "" ? ": " + raw.slice(-300) : ".")
         return
       }
       try {
         var data = parsed.data
-        if (data.error) root.modelsError = String(data.message || data.error)
-        else root.refreshModels()
-      } catch (e) { root.modelsError = "Sign-in parse error: " + e }
+        if (data.error) root.loginError = String(data.message || data.error)
+        else { root.loginError = ""; root.refreshModels() }
+      } catch (e) { root.loginError = "Sign-in parse error: " + e }
     }
   }
 
   function signIn() {
     if (loginProcess.running) return
     root.loginRunning = true
+    root.loginError = ""
     root.modelsError = ""
     root.loginRaw = ""
     loginProcess.command = ["/usr/bin/python3", backendPath("cm_login.py"), "--timeout", "300"]
@@ -513,6 +515,16 @@ Panel {
             enabled: !root.loginRunning && !root.modelsLoading
             onClicked: root.signIn()
           }
+        }
+
+        Text {
+          width: parent.width
+          visible: root.loginError !== ""
+          text: root.loginError
+          color: root.urgent
+          font.family: root.fontFamily
+          font.pixelSize: Style.font.caption
+          wrapMode: Text.Wrap
         }
 
         Text {
