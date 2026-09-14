@@ -116,6 +116,13 @@ def main():
         or cfg.get("google_client_id")
         or DEFAULT_GOOGLE_CLIENT_ID
     )
+    # The ColorMagic OAuth client enforces a secret at code-exchange time
+    # (same as the desktop app). Keep it in the 0600 config file or export
+    # COLORMAGIC_GOOGLE_CLIENT_SECRET. Never commit it.
+    client_secret = (
+        os.environ.get("COLORMAGIC_GOOGLE_CLIENT_SECRET")
+        or cfg.get("google_client_secret")
+    )
 
     verifier = _b64url(secrets.token_bytes(32))
     challenge = _b64url(hashlib.sha256(verifier.encode()).digest())
@@ -170,13 +177,16 @@ def main():
         err_exit("Google callback did not include a code.")
 
     try:
-        token = post_form(GOOGLE_TOKEN_URL, {
+        exchange_fields = {
             "client_id": client_id,
             "code": code,
             "code_verifier": verifier,
             "grant_type": "authorization_code",
             "redirect_uri": redirect_uri,
-        })
+        }
+        if client_secret:
+            exchange_fields["client_secret"] = client_secret
+        token = post_form(GOOGLE_TOKEN_URL, exchange_fields)
     except RuntimeError as e:
         err_exit(str(e))
     id_token = (token.get("id_token") or "").strip()
@@ -211,6 +221,8 @@ def main():
         "desktop_app_key": desktop_key(cfg),
         "google_client_id": client_id,
     })
+    if client_secret:
+        cfg["google_client_secret"] = client_secret
     save_config(cfg)
     ok_exit(user={"email": user.get("email"), "name": user.get("name")},
             expires_at=auth.get("expiresAt"))
