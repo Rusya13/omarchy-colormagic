@@ -335,9 +335,27 @@ Panel {
     stderr: StdioCollector { waitForEnd: true; onStreamFinished: { var e = String(text || "").trim(); if (e !== "") root.modelsError = e } }
     onExited: function(code) {
       root.loginRunning = false
-      if (code !== 0 && root.modelsError === "") { root.modelsError = "Sign-in exited " + code; return }
+      // Backend prints exactly one JSON doc on stdout; be lenient and
+      // parse the last JSON-looking line so wrapper noise never hides
+      // the real result. Anything unparseable is shown raw (truncated).
+      function parseLogin(raw) {
+        var lines = String(raw || "").split("\n")
+        for (var i = lines.length - 1; i >= 0; i--) {
+          var line = lines[i].trim()
+          if (line === "" || line[0] !== "{") continue
+          try { return { data: JSON.parse(line) } } catch (e) { /* try earlier */ }
+        }
+        try { return { data: JSON.parse(String(raw || "")) } } catch (e) { return { parseError: String(e) } }
+      }
+      if (code !== 0 && root.loginRaw.trim() === "" && root.modelsError === "") { root.modelsError = "Sign-in exited " + code; return }
+      var parsed = parseLogin(root.loginRaw)
+      if (parsed.parseError) {
+        var raw = root.loginRaw.trim() || root.modelsError
+        root.modelsError = "Sign-in gave an unreadable answer" + (code !== 0 ? " (exit " + code + ")" : "") + (raw !== "" ? ": " + raw.slice(-300) : ".")
+        return
+      }
       try {
-        var data = JSON.parse(root.loginRaw)
+        var data = parsed.data
         if (data.error) root.modelsError = String(data.message || data.error)
         else root.refreshModels()
       } catch (e) { root.modelsError = "Sign-in parse error: " + e }
@@ -349,7 +367,7 @@ Panel {
     root.loginRunning = true
     root.modelsError = ""
     root.loginRaw = ""
-    loginProcess.command = ["/usr/bin/python3", backendPath("cm_login.py"), "--timeout", "180"]
+    loginProcess.command = ["/usr/bin/python3", backendPath("cm_login.py"), "--timeout", "300"]
     loginProcess.running = true
   }
 

@@ -25,6 +25,7 @@ import json
 import os
 import queue
 import secrets
+import sys
 import threading
 import urllib.error
 import urllib.parse
@@ -146,16 +147,18 @@ def main():
     except Exception:
         opened = False
     if not opened:
-        print(json.dumps({
-            "warning": "open_browser_manually",
-            "message": "Open this URL to sign in:\n%s" % auth_url,
-        }))
+        # STDERR only: stdout must stay a single JSON document.
+        print("Sign-in browser did not open automatically. "
+              "Open this URL manually:\n%s" % auth_url,
+              file=sys.stderr)
 
     try:
         params = params_queue.get(timeout=args.timeout)
     except queue.Empty:
-        err_exit("Timed out waiting for Google sign-in (%ds). Run again "
-                 "and complete the browser step." % args.timeout)
+        err_exit("Timed out after %ds with no answer from the browser. "
+                 "Complete Google consent, wait for the 'Signed in' page, "
+                 "then press Sign in again." % args.timeout,
+                 code="login_timeout")
     finally:
         server.shutdown()
 
