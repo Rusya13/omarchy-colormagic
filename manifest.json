@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "id": "rus.colormagic",
+  "name": "ColorMagic",
+  "version": "0.1.0",
+  "author": "rus",
+  "license": "MIT",
+  "description": "Generate images, upscale photos, and edit pictures with the ColorMagic API — right from the bar. Polls jobs in the background and notifies on completion.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "activation": "on-demand",
+  "entryPoints": {
+    "barWidget": "Panel.qml"
+  },
+  "barWidget": {
+    "displayName": "ColorMagic",
+    "description": "Bar icon and popup panel to generate images, upscale files or screenshots, and edit pictures via the ColorMagic API (completion notifications, click to open results).",
+    "category": "Graphics",
+    "defaultSection": "right",
+    "allowMultiple": false,
+    "defaults": {
+      "apiBaseUrl": "https://api.colormagic.app",
+      "outputDir": "~/Pictures/ColorMagic",
+      "pollIntervalSec": 3,
+      "jobTimeoutSec": 300,
+      "defaultModel": "colormagic-image-klein",
+      "defaultSize": "1024x1024",
+      "upscaleModel": "real-esrgan",
+      "upscaleFactor": 2,
+      "notifyOnComplete": true,
+      "notifyOnFailure": true
+    },
+    "schema": [
+      {
+        "key": "apiBaseUrl",
+        "type": "string",
+        "label": "ColorMagic API base URL",
+        "defaultValue": "https://api.colormagic.app"
+      },
+      {
+        "key": "outputDir",
+        "type": "string",
+        "label": "Download folder for finished images",
+        "defaultValue": "~/Pictures/ColorMagic"
+      },
+      {
+        "key": "pollIntervalSec",
+        "type": "integer",
+        "label": "Job poll interval (seconds)",
+        "min": 2,
+        "max": 30,
+        "step": 1,
+        "defaultValue": 3
+      },
+      {
+        "key": "jobTimeoutSec",
+        "type": "integer",
+        "label": "Give up polling after (seconds)",
+        "min": 60,
+        "max": 900,
+        "step": 30,
+        "defaultValue": 300
+      },
+      {
+        "key": "defaultModel",
+        "type": "string",
+        "label": "Default generation model",
+        "defaultValue": "colormagic-image-klein"
+      },
+      {
+        "key": "defaultSize",
+        "type": "string",
+        "label": "Default image size",
+        "defaultValue": "1024x1024"
+      },
+      {
+        "key": "upscaleModel",
+        "type": "string",
+        "label": "Default upscale model",
+        "defaultValue": "real-esrgan"
+      },
+      {
+        "key": "upscaleFactor",
+        "type": "integer",
+        "label": "Default upscale factor",
+        "min": 2,
+        "max": 4,
+        "step": 2,
+        "defaultValue": 2
+      },
+      {
+        "key": "notifyOnComplete",
+        "type": "boolean",
+        "label": "Notify when a job finishes",
+        "defaultValue": true
+      },
+      {
+        "key": "notifyOnFailure",
+        "type": "boolean",
+        "label": "Notify on job failure",
+        "defaultValue": true
+      }
+    ]
+  }
+}

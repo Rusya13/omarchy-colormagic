@@ -1,0 +1,5 @@
+# never commit tokens or session material
+colormagic.json
+*.token
+.DS_Store
+__pycache__/
