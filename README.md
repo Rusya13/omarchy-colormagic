@@ -110,6 +110,7 @@ returns `job_conflict`, wait for the active job or cancel it first.
 Configurable from the plugin settings (see `manifest.json`):
 
 | Key | Default | Purpose |
+|---|---|---|
 | `apiBaseUrl` | `https://api.colormagic.app` | API endpoint |
 | `outputDir` | `~/Pictures/ColorMagic` | Finished-image downloads |
 | `pollIntervalSec` | `3` | Job poll cadence |
@@ -122,6 +123,15 @@ Auth material can also be supplied via environment
 (`COLORMAGIC_API_TOKEN`, `COLORMAGIC_API_BASE_URL`,
 `COLORMAGIC_DESKTOP_KEY`, `COLORMAGIC_OUTPUT_DIR`,
 `COLORMAGIC_GOOGLE_CLIENT_ID`), which override the config file.
+
+## Project facts
+
+- **Stack:** QML (Quickshell, Omarchy Quattro bar) + Python 3 standard library only. No build, no dependencies, no server.
+- **Runs:** on the user's desktop only. No live URL, no container, no deploy. Installed with `omarchy plugin add`.
+- **Talks to:** `https://api.colormagic.app` (the `colormagic-api` Worker) and Google OAuth for sign-in. No Plausible, ads, database or my-seo property.
+- **CI:** `.github/workflows/ci.yml` compiles `backend/*.py` on Python 3.12. Tests: `python3 -m unittest discover -s tests -v` (8 tests, fake local API).
+- **Backups:** no state in this repo; the repo on GitHub is the backup. The session token lives in `~/.config/omarchy/colormagic.json` on each machine and can be re-created by signing in.
+- **Owner:** rus. More: `docs/ARCHITECTURE.md`, `docs/CHANGELOG-TECH.md`, `docs/PROPOSALS.md`, `docs/AUDIT-2026-10.md`.
 
 ## Omarchy theme support
 
